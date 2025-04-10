@@ -1,3 +1,5 @@
+package model;
+
 import java.util.Objects;
 
 public class Task {
@@ -57,12 +59,12 @@ public class Task {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, description, status, id);
+        return Objects.hash(id);
     }
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "model.Task{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", status=" + status +

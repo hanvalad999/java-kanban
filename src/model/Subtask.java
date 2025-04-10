@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
+package model;
 
 public class Subtask extends Task {
     private int epicId;
@@ -19,7 +18,7 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return "Subtask{" +
+        return "model.Subtask{" +
                 "id=" + getId() +
                 ", title='" + getTitle() + '\'' +
                 ", status=" + getStatus() +

@@ -1,3 +1,10 @@
+package manager;
+
+import model.Task; // не знал если находятся в разных пакетов
+import model.Epic;  // , классы task и т.д не видят друг д/руга пришлось не много подумать
+import model.Subtask;
+import model.Status;
+
 import java.util.*;
 
 public class TaskManager {
@@ -144,23 +151,14 @@ public class TaskManager {
             epic.setStatus(Status.NEW);
             return;
         }
-
-        int newCount = 0;
-        int doneCount = 0;
-
+        // HashSet мы пока что не проходили,но спасибо что то новое узнал
+        Set<Status> uniqueStatuses = new HashSet<>();
         for (int id : subtaskIds) {
-            Status status = subtasks.get(id).getStatus();
-            if (status == Status.NEW) {
-                newCount++;
-            } else if (status == Status.DONE) {
-                doneCount++;
-            }
+            uniqueStatuses.add(subtasks.get(id).getStatus());
         }
 
-        if (doneCount == subtaskIds.size()) {
-            epic.setStatus(Status.DONE);
-        } else if (newCount == subtaskIds.size()) {
-            epic.setStatus(Status.NEW);
+        if (uniqueStatuses.size() == 1) {
+            epic.setStatus(uniqueStatuses.iterator().next());
         } else {
             epic.setStatus(Status.IN_PROGRESS);
         }
