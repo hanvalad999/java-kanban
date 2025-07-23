@@ -144,4 +144,16 @@ class TaskManagerTest {
         List<Subtask> subtasks = this.manager.getAllSubtasks();
         Assertions.assertEquals(0, subtasks.size());
     }
+
+    @Test
+    void taskShouldBeRemovedFromHistoryWhenDeleted() {
+        Task task = new Task("Test task", "Description", 20, Status.NEW);
+        manager.createTask(task);
+
+        manager.getTaskById(task.getId());
+        Assertions.assertTrue(manager.getHistory().contains(task), "Задача должна быть в истории");
+
+        manager.deleteTask(task.getId());
+        Assertions.assertFalse(manager.getHistory().contains(task), "Задача не была удалена из истории");
+    }
 }
