@@ -147,7 +147,7 @@ class TaskManagerTest {
 
     @Test
     void taskShouldBeRemovedFromHistoryWhenDeleted() {
-        Task task = new ("Test task", "Description", 20, Status.NEW);
+        Task task = new Task("Test task", "Description", 20, Status.NEW);
         manager.createTask(task);
 
         manager.getTaskById(task.getId());
