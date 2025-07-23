@@ -33,7 +33,7 @@ public class Task {
     }
 
     // Сеттеры
-    public void setId(int id){
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -64,7 +64,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return "model.Task{" +
+        return "model.Task {" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", status=" + status +
