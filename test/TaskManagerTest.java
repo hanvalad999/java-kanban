@@ -153,7 +153,7 @@ class TaskManagerTest {
         manager.getTaskById(task.getId());
         Assertions.assertTrue(manager.getHistory().contains(task), "Задача должна быть в истории");
 
-        manager.deleteTaskById(task.getId());
+        manager.deleteTask(task.getId());
         Assertions.assertFalse(manager.getHistory().contains(task), "Задача не была удалена из истории");
     }
 }
