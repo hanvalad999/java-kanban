@@ -4,7 +4,7 @@ import manager.Managers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ManagerTest {
+class ManagersTest {
 
     @Test
     void shouldCreateDefaultManager() {
