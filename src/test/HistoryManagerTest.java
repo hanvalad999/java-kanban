@@ -2,11 +2,8 @@ package test;
 
 import manager.HistoryManager;
 import manager.Managers;
-import model.Epic;
-import model.Subtask;
 import model.Task;
 import model.Status;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -21,27 +18,41 @@ public class HistoryManagerTest {
 
         assertNotNull(historyManager, "Менеджер не проинициализирован");
     }
-    @Test
-    void checkSizeOfRequestHistory() {
-        HistoryManager historyManager = Managers.getDefaultHistory();
-        Task task = new Task("Test1", "Description1", 1, Status.DONE);
-        final int sizeFromRequestHistoryShouldBe = 1;
-        final int sizeForCheckRequestSize = 10;
-        for (int i = 0; i <= sizeForCheckRequestSize; i++) {
-            historyManager.add(task);
-        }
-        List<Task> exampleOfRequestHistoryList = historyManager.getHistory();
 
-        assertEquals(sizeFromRequestHistoryShouldBe, exampleOfRequestHistoryList.size(), "Ограничение листа "
-                + "не работает");
-    }
     @Test
     void add() {
         HistoryManager historyManager = Managers.getDefaultHistory();
         Task task = new Task("Test", "Description", 1, Status.NEW);
         historyManager.add(task);
-        final List<Task> history = historyManager.getHistory();
+
+        List<Task> history = historyManager.getHistory();
         assertNotNull(history, "История не пустая.");
         assertEquals(1, history.size(), "История не пустая.");
+        assertEquals(task, history.get(0), "Добавленная задача должна быть в истории");
+    }
+
+    @Test
+    void shouldNotStoreDuplicates() {
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        Task task = new Task("Test", "Description", 1, Status.NEW);
+
+        for (int i = 0; i < 10; i++) {
+            historyManager.add(task);
+        }
+
+        List<Task> history = historyManager.getHistory();
+        assertEquals(1, history.size(), "История не должна содержать дубликаты");
+    }
+
+    @Test
+    void shouldRemoveTaskFromHistory() {
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        Task task = new Task("Task to Remove", "desc", 1, Status.NEW);
+
+        historyManager.add(task);
+        historyManager.remove(1);
+
+        List<Task> history = historyManager.getHistory();
+        assertTrue(history.isEmpty(), "История должна быть пустой после удаления задачи");
     }
 }
