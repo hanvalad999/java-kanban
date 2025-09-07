@@ -19,7 +19,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         this.file = file;
     }
 
-    public void save(){
+    public void save() {
         try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(this.file))) {
             fileWriter.write("id,type,name,status,description,epic");
             fileWriter.newLine();
@@ -29,7 +29,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
 
             for (Epic epic : getAllEpics()) {
-                fileWriter.write(epic.getId() + "," + epic.getType() + "," + epic.getTitle() + "," + epic.getStatus() + "," + epic.getDescription()+ ",");
+                fileWriter.write(epic.getId() + "," + epic.getType() + "," + epic.getTitle() + "," + epic.getStatus() + "," + epic.getDescription() + ",");
                 fileWriter.newLine();
             }
 
@@ -42,6 +42,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             System.out.println("Ошибка!");
         }
     }
+
     private static Task fromString(String value) {
         String[] params = value.split(",");
         int id = Integer.parseInt(params[0]);
@@ -72,7 +73,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
-                if(line.isEmpty()){
+                if (line.isEmpty()){
                     break;
                 }
                 Task task = fromString(line);
@@ -92,7 +93,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return manager;
     }
 
-    public Task addTask(Task task){
+    public Task addTask(Task task) {
         return super.createTask(task);
     }
 
