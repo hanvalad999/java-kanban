@@ -73,7 +73,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
-                if (line.isEmpty()){
+                if (line.isEmpty()) {
                     break;
                 }
                 Task task = fromString(line);
