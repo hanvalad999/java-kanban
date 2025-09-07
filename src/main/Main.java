@@ -12,7 +12,7 @@ public class Main {
         TaskManager manager = new FileBackedTaskManager(new File("tasks.csv"));
 
         System.out.println("Создаём и добавляем задачи...");
-        
+
         Task task1 = new Task("Постирать одежду", "Стиралка + порошок", 0, Status.NEW);
         Task task2 = new Task("Сходить в магазин", "Купить фрукты", 0, Status.IN_PROGRESS);
         manager.createTask(task1);
