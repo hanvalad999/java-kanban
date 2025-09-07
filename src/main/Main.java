@@ -1,41 +1,36 @@
 package main;
 
-import manager.Managers;
 import manager.TaskManager;
-import model.Epic;
-import model.Status;
-import model.Subtask;
-import model.Task;
+import manager.FileBackedTaskManager;
+import model.*;
+
+import java.io.File;
 
 public class Main {
     public static void main(String[] args) {
-        TaskManager manager = Managers.getDefault();
 
-        System.out.println("Создаем и добавляем задачи с полными параметрами...");
+        TaskManager manager = new FileBackedTaskManager(new File("tasks.csv"));
 
-        // Создаем задачи с явным указанием id и статуса
-        Task task1 = new Task("Постирать одежду", "Стиралка + порошок", 1, Status.NEW);
-        Task task2 = new Task("Сходить в магазин", "Купить фрукты", 2, Status.IN_PROGRESS);
+        System.out.println("Создаём и добавляем задачи...");
+        
+        Task task1 = new Task("Постирать одежду", "Стиралка + порошок", 0, Status.NEW);
+        Task task2 = new Task("Сходить в магазин", "Купить фрукты", 0, Status.IN_PROGRESS);
         manager.createTask(task1);
         manager.createTask(task2);
 
-        // Создаем эпики с явным указанием id
-        System.out.println("\nСоздаем и добавляем эпики...");
-        Epic epic1 = new Epic("Организация дня рождения", "Для папы", 3);
-        manager.createEpic(epic1);
+        System.out.println("\nСоздаём и добавляем эпики...");
+        Epic epic1 = new Epic("Организация дня рождения", "Для папы", 0);
+        manager.createEpic(epic1); // после этого у epic1 появится реальный id
 
-        // Создаем подзадачи с явным указанием id, статуса и epicId
         System.out.println("\nДобавляем подзадачи...");
-        Subtask sub1 = new Subtask("Купить часы", "Черные, кожаные", 4, Status.NEW, epic1.getId());
-        Subtask sub2 = new Subtask("Пригласить гостей", "Составить список из 20 человек", 5, Status.NEW, epic1.getId());
+        Subtask sub1 = new Subtask("Купить часы", "Чёрные, кожаные", 0, Status.NEW, epic1.getId());
+        Subtask sub2 = new Subtask("Пригласить гостей", "Список ~20 человек", 0, Status.NEW, epic1.getId());
         manager.createSubtask(sub1);
         manager.createSubtask(sub2);
 
-        // Выводим информацию
         System.out.println("\nТекущее состояние менеджера:");
-        printAllTasks(manager);
+        printAll(manager);
 
-        // Обновляем статусы
         System.out.println("\nОбновляем статусы подзадач...");
         sub1.setStatus(Status.DONE);
         sub2.setStatus(Status.IN_PROGRESS);
@@ -43,16 +38,14 @@ public class Main {
         manager.updateSubtask(sub2);
 
         System.out.println("\nПосле обновления статусов:");
-        printAllTasks(manager);
+        printAll(manager);
 
-        // Удаляем подзадачу
         System.out.println("\nУдаляем подзадачу...");
         manager.deleteSubtask(sub1.getId());
 
         System.out.println("\nПосле удаления подзадачи:");
-        printAllTasks(manager);
+        printAll(manager);
 
-        // Формируем историю просмотров
         System.out.println("\nФормируем историю просмотров...");
         manager.getTaskById(task1.getId());
         manager.getEpicById(epic1.getId());
@@ -60,29 +53,32 @@ public class Main {
 
         System.out.println("\nИстория просмотров:");
         manager.getHistory().forEach(System.out::println);
+
+        System.out.println("\nДанные сохранены в файл: tasks.csv");
     }
 
-    private static void printAllTasks(TaskManager manager) {
+    private static void printAll(TaskManager manager) {
         System.out.println("\n=== Все задачи ===");
-        manager.getAllTasks().forEach(task ->
-                System.out.printf("Task[id=%d, title='%s', status=%s, description='%s']%n",
-                        task.getId(), task.getTitle(), task.getStatus(), task.getDescription()));
+        for (Task t : manager.getAllTasks()) {
+            System.out.printf("Task[id=%d, title='%s', status=%s, description='%s']%n",
+                    t.getId(), t.getTitle(), t.getStatus(), t.getDescription());
+        }
 
         System.out.println("\n=== Все эпики ===");
-        manager.getAllEpics().forEach(epic -> {
+        for (Epic e : manager.getAllEpics()) {
             System.out.printf("Epic[id=%d, title='%s', status=%s, description='%s']%n",
-                    epic.getId(), epic.getTitle(), epic.getStatus(), epic.getDescription());
+                    e.getId(), e.getTitle(), e.getStatus(), e.getDescription());
             System.out.println("Подзадачи:");
-            manager.getSubtasksOfEpic(epic.getId()).forEach(subtask ->
-                    System.out.printf("  Subtask[id=%d, title='%s', status=%s, epicId=%d, description='%s']%n",
-                            subtask.getId(), subtask.getTitle(), subtask.getStatus(),
-                            subtask.getEpicId(), subtask.getDescription()));
-        });
+            for (Subtask s : manager.getSubtasksOfEpic(e.getId())) {
+                System.out.printf("  Subtask[id=%d, title='%s', status=%s, epicId=%d, description='%s']%n",
+                        s.getId(), s.getTitle(), s.getStatus(), s.getEpicId(), s.getDescription());
+            }
+        }
 
         System.out.println("\n=== Все подзадачи ===");
-        manager.getAllSubtasks().forEach(subtask ->
-                System.out.printf("Subtask[id=%d, title='%s', status=%s, epicId=%d, description='%s']%n",
-                        subtask.getId(), subtask.getTitle(), subtask.getStatus(),
-                        subtask.getEpicId(), subtask.getDescription()));
+        for (Subtask s : manager.getAllSubtasks()) {
+            System.out.printf("Subtask[id=%d, title='%s', status=%s, epicId=%d, description='%s']%n",
+                    s.getId(), s.getTitle(), s.getStatus(), s.getEpicId(), s.getDescription());
+        }
     }
 }
