@@ -144,6 +144,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
+    // удаление задач
     @Override
     public void deleteTask(int id) {
         super.deleteTask(id);
