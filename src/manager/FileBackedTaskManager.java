@@ -4,13 +4,13 @@ import model.*;
 
 import java.io.*;
 
-import java.util.*;
 
 import static model.TaskType.*;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private final File file;
+    private boolean isLoading = false;
 
 
 
@@ -52,15 +52,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String description = params[4];
 
         if (type == TASK) {
-            Task task = new Task(title, description, id, status);
-            return task;
+            return new Task(title, description, id, status);
+
         } else if (type == EPIC) {
-            Epic epic = new Epic(title, description, id);
-            return epic;
+            return new Epic(title, description, id);
         } else {
             int epicID = Integer.parseInt(params[5]);
-            Subtask subtask = new Subtask(title, description, id, status, epicID);
-            return subtask;
+            return new Subtask(title, description, id, status, epicID);
         }
 
     }
@@ -89,8 +87,44 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         } catch (IOException e) {
             System.out.println("Не удалось считать данные из файла.");
+        } finally {
+            manager.isLoading = false;
         }
         return manager;
+    }
+
+    public static void main(String[] args) {
+        File file = new File("tasks.csv");
+
+        FileBackedTaskManager m1 = new FileBackedTaskManager(file);
+
+        m1.createTask(new Task("T1", "D1", 0, Status.NEW));
+        m1.createTask(new Task("T2", "D2", 0, Status.IN_PROGRESS));
+
+        Epic e1 = m1.createEpic(new Epic("E1", "ED1", 0));
+
+        m1.createSubtask(new Subtask("S1", "SD1", 0, Status.NEW, e1.getId()));
+        m1.createSubtask(new Subtask("S2", "SD2", 0, Status.DONE, e1.getId()));
+
+        FileBackedTaskManager m2 = FileBackedTaskManager.loadFromFile(file);
+
+        if (m1.getAllTasks().size() == m2.getAllTasks().size()
+                && m1.getAllEpics().size() == m2.getAllEpics().size()
+                && m1.getAllSubtasks().size() == m2.getAllSubtasks().size()) {
+            System.out.println("LOAD OK");
+        } else {
+            System.out.println("LOAD FAIL");
+        }
+
+        System.out.println("\n--- Manager1 ---");
+        m1.getAllTasks().forEach(System.out::println);
+        m1.getAllEpics().forEach(System.out::println);
+        m1.getAllSubtasks().forEach(System.out::println);
+
+        System.out.println("\n--- Manager2 ---");
+        m2.getAllTasks().forEach(System.out::println);
+        m2.getAllEpics().forEach(System.out::println);
+        m2.getAllSubtasks().forEach(System.out::println);
     }
 
     public Task addTask(Task task) {
