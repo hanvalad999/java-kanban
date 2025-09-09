@@ -8,6 +8,7 @@ public class Task {
     private Status status;
     private int id = 0; // Начинаем с 1
 
+
     public Task(String title, String description, int id, Status status) {
         this.title = title;
         this.description = description;
@@ -30,6 +31,10 @@ public class Task {
 
     public String getDescription() {
         return description;
+    }
+
+    public TaskType getType() {
+        return TaskType.TASK;
     }
 
     // Сеттеры
