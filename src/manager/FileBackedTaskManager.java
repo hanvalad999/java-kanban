@@ -14,7 +14,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 
 
-    public FileBackedTaskManager(File file) {
+    private FileBackedTaskManager(File file) {
         super(new InMemoryHistoryManager());
         this.file = file;
     }
@@ -39,7 +39,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
 
         } catch (IOException e) {
-            System.out.println("Ошибка!");
+            throw new ManagerLoadException("Ошибка при сохранении файла", e);
         }
     }
 
@@ -86,7 +86,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
 
         } catch (IOException e) {
-            System.out.println("Не удалось считать данные из файла.");
+            throw new ManagerLoadException("Не удалось считать данные из файла", e);
         } finally {
             manager.isLoading = false;
         }
@@ -96,7 +96,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public static void main(String[] args) {
         File file = new File("tasks.csv");
 
-        FileBackedTaskManager m1 = new FileBackedTaskManager(file);
+        FileBackedTaskManager m1 = FileBackedTaskManager.loadFromFile(file);
 
         m1.createTask(new Task("T1", "D1", 0, Status.NEW));
         m1.createTask(new Task("T2", "D2", 0, Status.IN_PROGRESS));

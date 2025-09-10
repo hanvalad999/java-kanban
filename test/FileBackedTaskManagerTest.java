@@ -10,15 +10,23 @@ import java.nio.file.Path;
 import model.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FileBackedTaskManagerTest {
 
+    File file;
+    FileBackedTaskManager manager1;
+
+    @BeforeEach
+    void setUp() throws IOException {
+        file = File.createTempFile("task", ".csv");
+        manager1 = FileBackedTaskManager.loadFromFile(file);
+    }
+
     @Test
     void shouldSaveAndLoadEmptyFile() throws IOException {
-        File file = File.createTempFile("task", ".csv");
-        FileBackedTaskManager manager1 = new FileBackedTaskManager(file);
-
         manager1.save();
 
         FileBackedTaskManager manager2 = FileBackedTaskManager.loadFromFile(file);
@@ -31,9 +39,6 @@ public class FileBackedTaskManagerTest {
 
     @Test
     void shouldSaveSeveralTasks() throws IOException {
-        File file = File.createTempFile("task", ".csv");
-        FileBackedTaskManager manager1 = new FileBackedTaskManager(file);
-
         Task task1 = new Task("Task1", "Description1", 1, Status.NEW);
         manager1.createTask(task1);
 
@@ -72,9 +77,6 @@ public class FileBackedTaskManagerTest {
 
     @Test
     void shouldLoadSeveralTasksFromFile() throws IOException {
-        File file = File.createTempFile("task", ".csv");
-        FileBackedTaskManager manager1 = new FileBackedTaskManager(file);
-
         Task task1 = new Task("Task1", "Description1", 1, Status.NEW);
         manager1.createTask(task1);
 
