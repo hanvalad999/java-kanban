@@ -39,7 +39,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             }
 
         } catch (IOException e) {
-            throw new ManagerLoadException("Ошибка при сохранении файла", e);
+            throw new ManagerLoadException("Не удалось считать данные из файла", e);
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка при сохранении файла\", e)");
         }
     }
 
