@@ -17,6 +17,11 @@ public class Subtask extends Task {
     }
 
     @Override
+    public TaskType getType() {
+        return TaskType.SUBTASK;
+    }
+
+    @Override
     public String toString() {
         return "model.Subtask{" +
                 "id=" + getId() +
