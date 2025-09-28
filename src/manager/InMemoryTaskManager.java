@@ -7,6 +7,7 @@ import model.Status;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
     private int nextId = 1;
@@ -236,11 +237,10 @@ public class InMemoryTaskManager implements TaskManager {
     public List<Subtask> getSubtasksOfEpic(int epicId) {
         Epic epic = epics.get(epicId);
         if (epic == null) return Collections.emptyList();
-        List<Subtask> list = new ArrayList<>();
-        for (Integer id : epic.getSubtaskIds()) {
-            list.add(subtasks.get(id));
-        }
-        return list;
+        return epic.getSubtaskIds().stream()
+                .map(subtasks::get)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     @Override
@@ -250,26 +250,20 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Логика статуса эпика
     private void updateEpicStatus(Epic epic) {
-        List<Integer> subtaskIds = epic.getSubtaskIds();
-        if (subtaskIds.isEmpty()) {
+        var ids = epic.getSubtaskIds();
+        if (ids.isEmpty()) {
             epic.setStatus(Status.NEW);
             return;
         }
-        // Собираем уникальные статусы
-        boolean hasNew = false, hasDone = false, hasInProgress = false;
-        for (int id : subtaskIds) {
-            Subtask st = subtasks.get(id);
-            if (st == null) continue;
-            switch (st.getStatus()) {
-                case NEW -> hasNew = true;
-                case DONE -> hasDone = true;
-                default -> hasInProgress = true;
-            }
-        }
+        var statuses = ids.stream()
+                .map(subtasks::get)
+                .filter(Objects::nonNull)
+                .map(Subtask::getStatus)
+                .collect(Collectors.toSet());
 
-        if (hasDone && !hasNew && !hasInProgress) {
+        if (statuses.size() == 1 && statuses.contains(Status.DONE)) {
             epic.setStatus(Status.DONE);
-        } else if (hasNew && !hasDone && !hasInProgress) {
+        } else if (statuses.size() == 1 && statuses.contains(Status.NEW)) {
             epic.setStatus(Status.NEW);
         } else {
             epic.setStatus(Status.IN_PROGRESS);
@@ -323,11 +317,20 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private boolean hasIntersection(Task candidate) {
-        if (candidate == null) return false;
-        if (candidate instanceof Epic) return false;
-        for (Task t : prioritizedTasks) {
-            if (isOverlapping(candidate, t)) return true;
+        if (candidate == null || candidate instanceof Epic) return false;
+        if (candidate.getStartTime() == null || candidate.getDuration() == null) return false;
+        return prioritizedTasks.stream().anyMatch(t -> isOverlapping(candidate, t));
+    }
+
+    private void addToPrioritized(Task t) {
+        if (t != null && !(t instanceof Epic) && t.getStartTime() != null) {
+            prioritizedTasks.add(t);
         }
-        return false;
+    }
+
+    private void removeFromPrioritized(Task t) {
+        if (t != null && !(t instanceof Epic)) {
+            prioritizedTasks.remove(t);
+        }
     }
 }
