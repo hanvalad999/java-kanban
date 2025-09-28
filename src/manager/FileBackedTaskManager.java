@@ -112,7 +112,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    public static FileBackedTaskManager loadFromFile(File file) {
+    public static FileBackedTaskManager loadFromFile(File file) throws TimeIntersectionException {
         FileBackedTaskManager m = new FileBackedTaskManager(file);
 
         List<Task> tasks = new ArrayList<>();

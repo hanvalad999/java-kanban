@@ -1,8 +1,8 @@
 package main;
 
+import manager.TimeIntersectionException;
 import manager.TaskManager;
 import manager.FileBackedTaskManager;
-import manager.TimeIntersectionException;
 import model.*;
 
 import java.io.File;
