@@ -149,15 +149,15 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         for (Epic e : epics) {
             setNextId(m, e.getId());
-            m.createEpic(e);
+            m.addEpic(e);
         }
         for (Task t : tasks) {
             setNextId(m, t.getId());
-            m.createTask(t);
+            m.addTask(t);
         }
         for (Subtask s : subtasks) {
             setNextId(m, s.getId());
-            m.createSubtask(s);
+            m.addSubtask(s);
         }
 
         setNextId(m, maxId + 1);
@@ -175,7 +175,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     public Task addTask(Task task) {
-        return super.createTask(task);
+        try {
+            return super.createTask(task);   // без save()
+        } catch (TimeIntersectionException e) {
+            throw new ManagerLoadException("Некорректные интервалы в файле для task id=" + task.getId(), e);
+        }
     }
 
     public Epic addEpic(Epic epic) {
@@ -183,7 +187,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     public Subtask addSubtask(Subtask subtask) {
-        return super.createSubtask(subtask);
+        try {
+            return super.createSubtask(subtask); // без save(), пересчитает эпик
+        } catch (TimeIntersectionException e) {
+            throw new ManagerLoadException("Некорректные интервалы в файле для subtask id=" + subtask.getId(), e);
+        }
     }
 
     @Override
