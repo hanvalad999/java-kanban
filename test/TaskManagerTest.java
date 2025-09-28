@@ -24,7 +24,7 @@ class TaskManagerTest {
     }
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws Exception {
         this.manager = Managers.getDefault();
         Task task1 = new Task("Test task", "Description", 1, Status.NEW);
         Task task2 = new Task("Test task1", "Description1", 2, Status.NEW);
@@ -62,14 +62,14 @@ class TaskManagerTest {
     }
 
     @Test
-    void testTasksEqualityById() {
+    void testTasksEqualityById() throws Exception {
         Task testTask = new Task("Test epic1", "Description1", 13, Status.NEW);
         this.manager.createTask(testTask);
         assertEquals(testTask, this.manager.getTaskById(testTask.getId()));
     }
 
     @Test
-    void testSubtaskEqualityById() {
+    void testSubtaskEqualityById() throws Exception {
         Epic testEpic = new Epic("Test epic", "Description", 14);
         this.manager.createEpic(testEpic);
         Subtask subtask = new Subtask("Test subtask", "Description", 15, Status.NEW, testEpic.getId());
@@ -85,7 +85,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void checkForIdConflicts() {
+    void checkForIdConflicts() throws Exception {
         Task testTask1 = new Task("Test task", "Description", 17, Status.NEW);
         Task testTask2 = new Task("Test task1", "Description1", 18, Status.NEW);
         this.manager.createTask(testTask1);
@@ -94,7 +94,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void checkHistoryManagerSavesTaskVersions() {
+    void checkHistoryManagerSavesTaskVersions() throws Exception {
         Task checkTask = new Task("Test task", "Description", 19, Status.NEW);
         this.manager.createTask(checkTask);
         this.manager.getTaskById(checkTask.getId());
@@ -105,7 +105,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void addNewTask() {
+    void addNewTask() throws Exception {
         Task task = new Task("Test task", "Description", 20, Status.NEW);
         this.manager.createTask(task);
         Task savedTask = this.manager.getTaskById(task.getId());
@@ -117,7 +117,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void addNewSubtask() {
+    void addNewSubtask() throws Exception {
         Epic epic = new Epic("Test epic1", "Description1", 21);
         this.manager.createEpic(epic);
         Subtask subtask = new Subtask("Test subtask", "Desc", 22, Status.NEW, epic.getId());
@@ -149,7 +149,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void taskShouldBeRemovedFromHistoryWhenDeleted() {
+    void taskShouldBeRemovedFromHistoryWhenDeleted() throws Exception {
         Task task = new Task("Test task", "Description", 20, Status.NEW);
         manager.createTask(task);
 
@@ -164,7 +164,7 @@ class TaskManagerTest {
 
     // Статус эпика: все NEW
     @Test
-    void epicStatus_allNew() {
+    void epicStatus_allNew() throws Exception {
         Epic e = manager.createEpic(new Epic("E", "ED", 0));
         manager.createSubtask(new Subtask("S1", "SD1", 0, Status.NEW, e.getId()));
         manager.createSubtask(new Subtask("S2", "SD2", 0, Status.NEW, e.getId()));
@@ -173,7 +173,7 @@ class TaskManagerTest {
 
     // Статус эпика: все DONE
     @Test
-    void epicStatus_allDone() {
+    void epicStatus_allDone() throws Exception {
         Epic e = manager.createEpic(new Epic("E", "ED", 0));
         manager.createSubtask(new Subtask("S1", "SD1", 0, Status.DONE, e.getId()));
         manager.createSubtask(new Subtask("S2", "SD2", 0, Status.DONE, e.getId()));
@@ -182,7 +182,7 @@ class TaskManagerTest {
 
     // Статус эпика: NEW + DONE -> IN_PROGRESS
     @Test
-    void epicStatus_mixNewDone() {
+    void epicStatus_mixNewDone() throws Exception {
         Epic e = manager.createEpic(new Epic("E", "ED", 0));
         manager.createSubtask(new Subtask("S1", "SD1", 0, Status.NEW, e.getId()));
         manager.createSubtask(new Subtask("S2", "SD2", 0, Status.DONE, e.getId()));
@@ -191,7 +191,7 @@ class TaskManagerTest {
 
     // Статус эпика: есть IN_PROGRESS -> IN_PROGRESS
     @Test
-    void epicStatus_inProgressPresent() {
+    void epicStatus_inProgressPresent() throws Exception {
         Epic e = manager.createEpic(new Epic("E", "ED", 0));
         manager.createSubtask(new Subtask("S1", "SD1", 0, Status.IN_PROGRESS, e.getId()));
         manager.createSubtask(new Subtask("S2", "SD2", 0, Status.NEW, e.getId()));
@@ -200,7 +200,7 @@ class TaskManagerTest {
 
     // сортировка по startTime + исключение задач без startTime
     @Test
-    void prioritizedTasks_sortedByStart_excludesNullStart() {
+    void prioritizedTasks_sortedByStart_excludesNullStart() throws Exception {
         LocalDateTime base = LocalDateTime.now().withSecond(0).withNano(0);
 
         Task t1 = new Task("PR1", "D", 0, Status.NEW);
@@ -223,7 +223,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void intersection_overlapping_throws() {
+    void intersection_overlapping_throws() throws Exception {
         LocalDateTime base = LocalDateTime.now().withSecond(0).withNano(0);
 
         Task a = new Task("A", "D", 0, Status.NEW);
@@ -239,7 +239,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void intersection_touching_allowed() {
+    void intersection_touching_allowed() throws Exception {
         LocalDateTime base = LocalDateTime.now().withSecond(0).withNano(0);
 
         Task a = new Task("A", "D", 0, Status.NEW);
@@ -255,7 +255,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void epicTime_aggregatesFromSubtasks() {
+    void epicTime_aggregatesFromSubtasks() throws Exception {
         Epic e = manager.createEpic(new Epic("Etime", "ED", 0));
 
         LocalDateTime s1Start = LocalDateTime.now().withSecond(0).withNano(0);
