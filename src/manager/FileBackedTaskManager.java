@@ -114,13 +114,16 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager m = new FileBackedTaskManager(file);
+
         List<Task> tasks = new ArrayList<>();
         List<Epic> epics = new ArrayList<>();
         List<Subtask> subtasks = new ArrayList<>();
         int maxId = 0;
+
         if (!file.exists()) {
             return m;
         }
+
         try (BufferedReader r = new BufferedReader(new FileReader(file))) {
             String header = r.readLine();
             String line;
@@ -139,22 +142,36 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IOException e) {
             throw new ManagerLoadException("Не удалось считать данные из файла", e);
         }
+
+        epics.sort((a, b) -> Integer.compare(a.getId(), b.getId()));
+        tasks.sort((a, b) -> Integer.compare(a.getId(), b.getId()));
+        subtasks.sort((a, b) -> Integer.compare(a.getId(), b.getId()));
+
         for (Epic e : epics) {
-            m.addEpic(e);
+            setNextId(m, e.getId());
+            m.createEpic(e);
         }
         for (Task t : tasks) {
-            m.addTask(t);
+            setNextId(m, t.getId());
+            m.createTask(t);
         }
         for (Subtask s : subtasks) {
-            m.addSubtask(s);
+            setNextId(m, s.getId());
+            m.createSubtask(s);
         }
+
+        setNextId(m, maxId + 1);
+        return m;
+    }
+
+    private static void setNextId(InMemoryTaskManager mgr, int value) {
         try {
             Field f = InMemoryTaskManager.class.getDeclaredField("nextId");
             f.setAccessible(true);
-            f.setInt(m, maxId + 1);
-        } catch (Exception ignore) {
+            f.setInt(mgr, value);
+        } catch (Exception e) {
+            throw new ManagerLoadException("Не удалось установить nextId", e);
         }
-        return m;
     }
 
     public Task addTask(Task task) {
