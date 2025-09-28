@@ -58,14 +58,14 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testTasksEqualityById() {
+    void testTasksEqualityById() throws TimeIntersectionException {
         Task t = newTask("T");
         t = manager.createTask(t);
         assertEquals(t, manager.getTaskById(t.getId()));
     }
 
     @Test
-    void testSubtaskEqualityById() {
+    void testSubtaskEqualityById() throws TimeIntersectionException {
         Epic e = manager.createEpic(newEpic("E"));
         Subtask s = manager.createSubtask(newSub(e, "S", Status.NEW));
         assertEquals(s, manager.getSubtaskById(s.getId()));
@@ -78,7 +78,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void addNewTask_andGetAll() {
+    void addNewTask_andGetAll() throws TimeIntersectionException {
         Task t = manager.createTask(newTask("T"));
         Task got = manager.getTaskById(t.getId());
         assertNotNull(got);
@@ -88,7 +88,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void clearAllTasks() {
+    void clearAllTasks() throws TimeIntersectionException {
         manager.createTask(newTask("A"));
         manager.createTask(newTask("B"));
         manager.clearAllTasks();
@@ -96,7 +96,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void clearAllEpicsAlsoClearsSubtasks() {
+    void clearAllEpicsAlsoClearsSubtasks() throws TimeIntersectionException {
         Epic e = manager.createEpic(newEpic("E"));
         manager.createSubtask(newSub(e, "S1", Status.NEW));
         manager.createSubtask(newSub(e, "S2", Status.NEW));
@@ -106,7 +106,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void taskRemovedFromHistoryWhenDeleted() {
+    void taskRemovedFromHistoryWhenDeleted() throws TimeIntersectionException {
         Task t = manager.createTask(newTask("T"));
         manager.getTaskById(t.getId());
         assertTrue(manager.getHistory().contains(t));
@@ -115,7 +115,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void epicStatus_allNEW() {
+    void epicStatus_allNEW() throws TimeIntersectionException {
         Epic e = manager.createEpic(newEpic("E"));
         manager.createSubtask(newSub(e, "S1", Status.NEW));
         manager.createSubtask(newSub(e, "S2", Status.NEW));
@@ -123,7 +123,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void epicStatus_allDONE() {
+    void epicStatus_allDONE() throws TimeIntersectionException {
         Epic e = manager.createEpic(newEpic("E"));
         manager.createSubtask(newSub(e, "S1", Status.DONE));
         manager.createSubtask(newSub(e, "S2", Status.DONE));
@@ -131,7 +131,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void epicStatus_mixNEWandDONE() {
+    void epicStatus_mixNEWandDONE() throws TimeIntersectionException {
         Epic e = manager.createEpic(newEpic("E"));
         manager.createSubtask(newSub(e, "S1", Status.NEW));
         manager.createSubtask(newSub(e, "S2", Status.DONE));
@@ -139,7 +139,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void epicStatus_hasIN_PROGRESS() {
+    void epicStatus_hasIN_PROGRESS() throws TimeIntersectionException {
         Epic e = manager.createEpic(newEpic("E"));
         manager.createSubtask(newSub(e, "S1", Status.IN_PROGRESS));
         manager.createSubtask(newSub(e, "S2", Status.NEW));
@@ -147,7 +147,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void overlappingIntervals_throw() {
+    void overlappingIntervals_throw() throws TimeIntersectionException {
         LocalDateTime base = LocalDateTime.now().withSecond(0).withNano(0);
 
         Task a = newTask("A");
@@ -163,7 +163,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void touchingIntervals_allowed() {
+    void touchingIntervals_allowed() throws TimeIntersectionException {
         LocalDateTime base = LocalDateTime.now().withSecond(0).withNano(0);
 
         Task a = newTask("A");
@@ -179,7 +179,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void prioritizedTasks_sortedByStart_excludesNullStart() {
+    void prioritizedTasks_sortedByStart_excludesNullStart() throws TimeIntersectionException    {
         LocalDateTime base = LocalDateTime.now().withSecond(0).withNano(0);
 
         Task later = newTask("LATER");
@@ -202,7 +202,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void epicTimingAggregatesSubtasks() {
+    void epicTimingAggregatesSubtasks() throws TimeIntersectionException {
         Epic e = manager.createEpic(newEpic("E"));
 
         LocalDateTime s1 = LocalDateTime.now().withSecond(0).withNano(0);
