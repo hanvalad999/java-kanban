@@ -6,14 +6,15 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     private final File file;
 
-    // Используем закрытый конструктор и фабрику loadFromFile
     private FileBackedTaskManager(File file) {
         super(new InMemoryHistoryManager());
         this.file = file;
@@ -40,15 +41,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String type = (task instanceof Epic) ? TaskType.EPIC.name()
                 : (task instanceof Subtask) ? TaskType.SUBTASK.name()
                 : TaskType.TASK.name();
-
         String duration = (task.getDuration() == null) ? "" : String.valueOf(task.getDuration().toMinutes());
-        String start  = (task.getStartTime() == null) ? "" : task.getStartTime().toString();
-
+        String start = (task.getStartTime() == null) ? "" : task.getStartTime().toString();
         String epicId = "";
         if (task instanceof Subtask st) {
             epicId = String.valueOf(st.getEpicId());
         }
-
         return String.join(",",
                 String.valueOf(task.getId()),
                 type,
@@ -63,7 +61,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private Task fromString(String line) {
         String[] p = line.split(",", -1);
-
         int id = Integer.parseInt(p[0]);
         TaskType type = TaskType.valueOf(p[1]);
         String title = unescape(p[2]);
@@ -71,7 +68,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         String description = unescape(p[4]);
         Duration duration = p[5].isEmpty() ? null : Duration.ofMinutes(Long.parseLong(p[5]));
         LocalDateTime start = p[6].isEmpty() ? null : LocalDateTime.parse(p[6]);
-
         switch (type) {
             case TASK -> {
                 Task t = new Task(title, description, id, status);
@@ -99,7 +95,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         try (BufferedWriter w = new BufferedWriter(new FileWriter(this.file))) {
             w.write(HEADER);
             w.newLine();
-
             for (Task t : getAllTasks()) {
                 w.write(taskToCsv(t));
                 w.newLine();
@@ -119,24 +114,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager m = new FileBackedTaskManager(file);
-
         List<Task> tasks = new ArrayList<>();
         List<Epic> epics = new ArrayList<>();
         List<Subtask> subtasks = new ArrayList<>();
         int maxId = 0;
-
         if (!file.exists()) {
             return m;
         }
-
         try (BufferedReader r = new BufferedReader(new FileReader(file))) {
-            String header = r.readLine(); // пропускаем заголовок
+            String header = r.readLine();
             String line;
             while ((line = r.readLine()) != null) {
                 if (line.isBlank()) continue;
                 Task t = m.fromString(line);
                 maxId = Math.max(maxId, t.getId());
-
                 if (t instanceof Epic e) {
                     epics.add(e);
                 } else if (t instanceof Subtask s) {
@@ -148,24 +139,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         } catch (IOException e) {
             throw new ManagerLoadException("Не удалось считать данные из файла", e);
         }
-
         for (Epic e : epics) {
-            m.addEpic(e); // super.createEpic без save()
+            m.addEpic(e);
         }
         for (Task t : tasks) {
-            m.addTask(t); // super.createTask без save()
+            m.addTask(t);
         }
         for (Subtask s : subtasks) {
-            m.addSubtask(s); // super.createSubtask без save(), пересчитает эпик
+            m.addSubtask(s);
         }
-
         try {
             Field f = InMemoryTaskManager.class.getDeclaredField("nextId");
             f.setAccessible(true);
             f.setInt(m, maxId + 1);
         } catch (Exception ignore) {
         }
-
         return m;
     }
 
