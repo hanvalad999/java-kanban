@@ -8,11 +8,11 @@ import java.util.List;
 
 public interface TaskManager {
 
-    Task createTask(Task task);
+    Task createTask(Task task) throws TimeIntersectionException;
 
     Epic createEpic(Epic epic);
 
-    Subtask createSubtask(Subtask subtask);
+    Subtask createSubtask(Subtask subtask) throws TimeIntersectionException;
 
     List<Task> getAllTasks();
 
@@ -26,11 +26,11 @@ public interface TaskManager {
 
     Subtask getSubtaskById(int id);
 
-    void updateTask(Task updatedTask);
+    void updateTask(Task updatedTask) throws TimeIntersectionException;
 
     void updateEpic(Epic updatedEpic);
 
-    void updateSubtask(Subtask updatedSubtask);
+    void updateSubtask(Subtask updatedSubtask) throws  TimeIntersectionException;
 
     void deleteTask(int id);
 

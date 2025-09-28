@@ -187,7 +187,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task createTask(Task task) {
+    public Task createTask(Task task) throws TimeIntersectionException {
         Task t = super.createTask(task);
         save();
         return t;
@@ -201,14 +201,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Subtask createSubtask(Subtask subtask) {
+    public Subtask createSubtask(Subtask subtask) throws TimeIntersectionException {
         Subtask s = super.createSubtask(subtask);
         save();
         return s;
     }
 
     @Override
-    public void updateTask(Task updatedTask) {
+    public void updateTask(Task updatedTask) throws TimeIntersectionException {
         super.updateTask(updatedTask);
         save();
     }
@@ -220,7 +220,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void updateSubtask(Subtask updatedSubtask) {
+    public void updateSubtask(Subtask updatedSubtask) throws TimeIntersectionException {
         super.updateSubtask(updatedSubtask);
         save();
     }

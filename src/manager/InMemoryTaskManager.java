@@ -16,18 +16,16 @@ public class InMemoryTaskManager implements TaskManager {
     private final Map<Integer, Epic> epics = new HashMap<>();
     private final Map<Integer, Subtask> subtasks = new HashMap<>();
     private final HistoryManager  historyManager;
-    private final TreeSet<Task> prioritizedTasks = new TreeSet<>((a, b) -> {
+
+    private final Set<Task> prioritizedTasks = new TreeSet<>((a, b) -> {
         if (a == b) return 0;
-        LocalDateTime sa = a.getStartTime();
-        LocalDateTime sb = b.getStartTime();
-        if (sa == null && sb == null) {
-            return Integer.compare(a.getId(), b.getId());
-        }
+        var sa = a.getStartTime();
+        var sb = b.getStartTime();
+        if (sa == null && sb == null) return Integer.compare(a.getId(), b.getId());
         if (sa == null) return 1;
         if (sb == null) return -1;
         int cmp = sa.compareTo(sb);
-        if (cmp != 0) return cmp;
-        return Integer.compare(a.getId(), b.getId());
+        return (cmp != 0) ? cmp : Integer.compare(a.getId(), b.getId());
     });
 
     public InMemoryTaskManager(HistoryManager historyManager) {
@@ -36,10 +34,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Создание задач
     @Override
-    public Task createTask(Task task) {
+    public Task createTask(Task task) throws TimeIntersectionException {
         task.setId(nextId++);
         if (hasIntersection(task)) {
-            throw new IllegalStateException("Пересечение по времени");
+            throw new TimeIntersectionException("Пересечение по времени");
         }
         tasks.put(task.getId(), task);
         addToPrioritized(task);
@@ -54,10 +52,10 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask createSubtask(Subtask sub) {
+    public Subtask createSubtask(Subtask sub) throws TimeIntersectionException {
         sub.setId(nextId++);
         if (hasIntersection(sub)) {
-            throw new IllegalStateException("Пересечение по времени задач/подзадач.");
+            throw new TimeIntersectionException("Пересечение по времени задач/подзадач.");
         }
         subtasks.put(sub.getId(), sub);
         addToPrioritized(sub);
@@ -123,12 +121,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Обновление
     @Override
-    public void updateTask(Task updated) {
+    public void updateTask(Task updated) throws TimeIntersectionException {
         Task old = tasks.get(updated.getId());
         removeFromPrioritized(old);
         if (hasIntersection(updated)) {
             addToPrioritized(old);
-            throw new IllegalStateException("Пересечение по времени");
+            throw new TimeIntersectionException("Пересечение по времени");
         }
         tasks.put(updated.getId(), updated);
         addToPrioritized(updated);
@@ -144,14 +142,14 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateSubtask(Subtask updatedSubtask) {
+    public void updateSubtask(Subtask updatedSubtask) throws TimeIntersectionException {
         Subtask old = subtasks.get(updatedSubtask.getId());
         if (old == null) return;
 
         removeFromPrioritized(old);
         if (hasIntersection(updatedSubtask)) {
             addToPrioritized(old);
-            throw new IllegalStateException("Пересечение по времени задач/подзадач.");
+            throw new TimeIntersectionException("Пересечение по времени задач/подзадач.");
         }
         subtasks.put(updatedSubtask.getId(), updatedSubtask);
         addToPrioritized(updatedSubtask);

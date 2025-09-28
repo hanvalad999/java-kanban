@@ -158,7 +158,7 @@ public abstract class AbstractTaskManagerTest<T extends TaskManager> {
         b.setStartTime(base.plusMinutes(30));  // [t+30 .. t+90)
         b.setDuration(Duration.ofMinutes(60));
 
-        assertThrows(IllegalStateException.class, () -> manager.createTask(b));
+        assertThrows(TimeIntersectionException.class, () -> manager.createTask(b));
     }
 
     @Test
