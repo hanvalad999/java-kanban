@@ -2,12 +2,13 @@ package main;
 
 import manager.TaskManager;
 import manager.FileBackedTaskManager;
+import manager.TimeIntersectionException;
 import model.*;
 
 import java.io.File;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws TimeIntersectionException {
 
         TaskManager manager = FileBackedTaskManager.loadFromFile(new File("tasks.csv"));
 
