@@ -38,7 +38,7 @@ public class FileBackedTaskManagerTest {
 
 
     @Test
-    void shouldSaveSeveralTasks() throws IOException {
+    void shouldSaveSeveralTasks() throws Exception {
         Task task1 = new Task("Task1", "Description1", 1, Status.NEW);
         manager1.createTask(task1);
 
@@ -76,7 +76,7 @@ public class FileBackedTaskManagerTest {
 
 
     @Test
-    void shouldLoadSeveralTasksFromFile() throws IOException {
+    void shouldLoadSeveralTasksFromFile() throws Exception {
         Task task1 = new Task("Task1", "Description1", 1, Status.NEW);
         manager1.createTask(task1);
 
