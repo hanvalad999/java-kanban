@@ -1,41 +1,43 @@
 package httpapi;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.net.URI;
-import java.net.http.*;
+import java.net.http.HttpResponse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EpicsHttpTest extends HttpTestBase {
 
     @Test
     void createEpic_and_listSubtasks_empty() throws Exception {
-        String epicJson = """
-        {"title":"Epic A","description":"d","status":"NEW"}
-        """;
-        var create = client.send(
-                HttpRequest.newBuilder(URI.create(url("/epics")))
-                        .header("Content-Type","application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(epicJson)).build(),
-                HttpResponse.BodyHandlers.ofString()
-        );
-        Assertions.assertEquals(201, create.statusCode());
-        int epicId = extractId(create.body());
+        int epicId = createEpic("""
+            {"title":"Epic A","description":"d","status":"NEW"}
+        """);
 
         var subsOfEpic = client.send(
-                HttpRequest.newBuilder(URI.create(url("/epics/subtasks?epicId="+epicId))).GET().build(),
-                HttpResponse.BodyHandlers.ofString()
+                java.net.http.HttpRequest.newBuilder(
+                        java.net.URI.create(url("/epics/subtasks?epicId=" + epicId))
+                ).GET().build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString()
         );
-        Assertions.assertEquals(200, subsOfEpic.statusCode());
-        Assertions.assertTrue(subsOfEpic.body().startsWith("[")); // пустой список — "[]"
+
+        assertEquals(200, subsOfEpic.statusCode());
+        assertTrue(subsOfEpic.body().startsWith("["));
     }
 
     @Test
     void getUnknown_returns404() throws Exception {
         var resp = client.send(
-                HttpRequest.newBuilder(URI.create(url("/epics?id=999999"))).GET().build(),
-                HttpResponse.BodyHandlers.ofString()
+                java.net.http.HttpRequest.newBuilder(
+                        java.net.URI.create(url("/epics?id=999999"))
+                ).GET().build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString()
         );
-        Assertions.assertEquals(404, resp.statusCode());
+        assertEquals(404, resp.statusCode());
+    }
+
+    // Вспомогательный метод
+    protected int createEpic(String json) throws Exception {
+        var response = post("/epics", json);
+        assertEquals(201, response.statusCode());
+        return extractId(response.body());
     }
 }
