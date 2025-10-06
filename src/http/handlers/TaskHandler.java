@@ -42,7 +42,7 @@ public class TaskHandler extends BaseHttpHandler {
                     String body = readBody(exchange);
                     Task incoming = gson.fromJson(body, Task.class);
                     if (incoming == null) {
-                        sendServerError(exchange, "Invalid JSON");
+                        sendServerError(exchange, "Invalid JSON: empty body");
                         return;
                     }
 
@@ -70,12 +70,21 @@ public class TaskHandler extends BaseHttpHandler {
                 default:
                     sendServerError(exchange, "Unsupported method: " + method);
             }
+
+            // --- Отдельная обработка исключений ---
         } catch (NotFoundException nfe) {
             sendNotFound(exchange, nfe.getMessage());
+
         } catch (TimeIntersectionException tie) {
             sendHasIntersections(exchange, tie.getMessage());
+
+        } catch (com.google.gson.JsonSyntaxException jse) {
+            jse.printStackTrace(); // 🔍 печатаем стек в консоль
+            sendServerError(exchange, "JsonSyntaxException: " + String.valueOf(jse.getMessage()));
+
         } catch (Exception e) {
-            sendServerError(exchange, e.getMessage());
+            e.printStackTrace(); // 🔍 печатаем стек в консоль
+            sendServerError(exchange, e.getClass().getSimpleName() + ": " + String.valueOf(e.getMessage()));
         }
     }
 }

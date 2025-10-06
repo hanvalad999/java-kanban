@@ -2,6 +2,7 @@ package http.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import http.BaseHttpHandler;
+import manager.NotFoundException;
 import manager.TaskManager;
 import model.Epic;
 
@@ -27,19 +28,22 @@ public class EpicsHandler extends BaseHttpHandler {
                 case "GET": {
                     if (query != null && query.startsWith("id=")) {
                         int id = Integer.parseInt(query.substring(3));
-                        Epic e = manager.getEpicById(id);
-                        if (e == null) { sendNotFound(exchange, "Epic not found"); return; }
-                        sendText(exchange, 200, gson.toJson(e));
+                        Epic epic = manager.getEpicById(id); // может выбросить NotFoundException
+                        sendText(exchange, 200, gson.toJson(epic));
                     } else {
                         List<Epic> list = manager.getAllEpics();
                         sendText(exchange, 200, gson.toJson(list));
                     }
                     break;
                 }
+
                 case "POST": {
                     String body = readBody(exchange);
                     Epic incoming = gson.fromJson(body, Epic.class);
-                    if (incoming == null) { sendServerError(exchange, "Invalid JSON"); return; }
+                    if (incoming == null) {
+                        sendServerError(exchange, "Invalid JSON");
+                        return;
+                    }
 
                     if (incoming.getId() == 0) {
                         Epic created = manager.createEpic(incoming);
@@ -50,6 +54,7 @@ public class EpicsHandler extends BaseHttpHandler {
                     }
                     break;
                 }
+
                 case "DELETE": {
                     if (query != null && query.startsWith("id=")) {
                         int id = Integer.parseInt(query.substring(3));
@@ -60,9 +65,12 @@ public class EpicsHandler extends BaseHttpHandler {
                     sendText(exchange, 201, "");
                     break;
                 }
+
                 default:
-                    sendServerError(exchange, "Unsupported method");
+                    sendServerError(exchange, "Unsupported method: " + method);
             }
+        } catch (NotFoundException e) {
+            sendNotFound(exchange, e.getMessage());
         } catch (Exception e) {
             sendServerError(exchange, e.getMessage());
         }

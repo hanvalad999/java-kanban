@@ -2,6 +2,7 @@ package http.handlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import http.BaseHttpHandler;
+import manager.NotFoundException;
 import manager.TaskManager;
 import manager.TimeIntersectionException;
 import model.Subtask;
@@ -21,48 +22,40 @@ public class SubtasksHandler extends BaseHttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String method = exchange.getRequestMethod();
         URI uri = exchange.getRequestURI();
-        String path = uri.getPath();
         String query = uri.getQuery();
 
         try {
             switch (method) {
                 case "GET": {
-                    if (path.endsWith("/epic") && query != null && query.startsWith("id=")) {
-                        int epicId = Integer.parseInt(query.substring(3));
-                        sendText(exchange, 200, gson.toJson(manager.getSubtasksOfEpic(epicId)));
-                    } else if (query != null && query.startsWith("id=")) {
+                    if (query != null && query.startsWith("id=")) {
                         int id = Integer.parseInt(query.substring(3));
-                        Subtask s = manager.getSubtaskById(id);
-                        if (s == null) { sendNotFound(exchange, "Subtask not found"); return; }
-                        sendText(exchange, 200, gson.toJson(s));
+                        Subtask sub = manager.getSubtaskById(id); // выбросит NotFoundException
+                        sendText(exchange, 200, gson.toJson(sub));
                     } else {
                         List<Subtask> list = manager.getAllSubtasks();
                         sendText(exchange, 200, gson.toJson(list));
                     }
                     break;
                 }
+
                 case "POST": {
                     String body = readBody(exchange);
                     Subtask incoming = gson.fromJson(body, Subtask.class);
-                    if (incoming == null) { sendServerError(exchange, "Invalid JSON"); return; }
+                    if (incoming == null) {
+                        sendServerError(exchange, "Invalid JSON");
+                        return;
+                    }
 
                     if (incoming.getId() == 0) {
-                        try {
-                            Subtask created = manager.createSubtask(incoming);
-                            sendText(exchange, 201, gson.toJson(created));
-                        } catch (TimeIntersectionException tie) {
-                            sendHasIntersections(exchange, tie.getMessage());
-                        }
+                        Subtask created = manager.createSubtask(incoming);
+                        sendText(exchange, 201, gson.toJson(created));
                     } else {
-                        try {
-                            manager.updateSubtask(incoming);
-                            sendText(exchange, 201, gson.toJson(incoming));
-                        } catch (TimeIntersectionException tie) {
-                            sendHasIntersections(exchange, tie.getMessage());
-                        }
+                        manager.updateSubtask(incoming);
+                        sendText(exchange, 201, gson.toJson(incoming));
                     }
                     break;
                 }
+
                 case "DELETE": {
                     if (query != null && query.startsWith("id=")) {
                         int id = Integer.parseInt(query.substring(3));
@@ -73,9 +66,15 @@ public class SubtasksHandler extends BaseHttpHandler {
                     sendText(exchange, 201, "");
                     break;
                 }
+
                 default:
-                    sendServerError(exchange, "Unsupported method");
+                    sendServerError(exchange, "Unsupported method: " + method);
             }
+
+        } catch (NotFoundException e) {
+            sendNotFound(exchange, e.getMessage());
+        } catch (TimeIntersectionException e) {
+            sendHasIntersections(exchange, e.getMessage());
         } catch (Exception e) {
             sendServerError(exchange, e.getMessage());
         }

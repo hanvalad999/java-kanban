@@ -57,20 +57,26 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Subtask createSubtask(Subtask sub) throws TimeIntersectionException {
+        // 1) эпик должен существовать
+        Epic epic = epics.get(sub.getEpicId());
+        if (epic == null) {
+            throw new NotFoundException("Epic id=" + sub.getEpicId() + " not found");
+        }
+
+        // 2) проверка пересечений
         sub.setId(nextId++);
         if (hasIntersection(sub)) {
-            throw new TimeIntersectionException("Пересечение по времени задач/подзадач");
+            throw new TimeIntersectionException("Пересечение по времени задач/подзадач.");
         }
+
+        // 3) сохранить и обновить эпик
         subtasks.put(sub.getId(), sub);
         addToPrioritized(sub);
 
-        // Привязка подзадачи к эпику
-        Epic epic = epics.get(sub.getEpicId());
-        if (epic != null) {
-            epic.addSubtask(sub.getId());
-            updateEpicStatus(epic);
-            updateEpicTime(epic);
-        }
+        epic.addSubtask(sub.getId());
+        updateEpicStatus(epic);
+        updateEpicTime(epic);
+
         return sub;
     }
 
@@ -100,26 +106,32 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task getTaskById(int id) {
-        Task task = tasks.get(id);
-        if (task == null) throw new NotFoundException("Task id=" + id + " не найден");
-        historyManager.add(task);
-        return task;
+        Task t = tasks.get(id);
+        if (t == null) {
+            throw new NotFoundException("Task id=" + id + " not found");
+        }
+        historyManager.add(t);
+        return t;
     }
 
     @Override
     public Epic getEpicById(int id) {
-        Epic epic = epics.get(id);
-        if (epic == null) throw new NotFoundException("Epic id=" + id + " не найден");
-        historyManager.add(epic);
-        return epic;
+        Epic e = epics.get(id);
+        if (e == null) {
+            throw new NotFoundException("Epic id=" + id + " not found");
+        }
+        historyManager.add(e);
+        return e;
     }
 
     @Override
     public Subtask getSubtaskById(int id) {
-        Subtask subtask = subtasks.get(id);
-        if (subtask == null) throw new NotFoundException("Subtask id=" + id + " не найден");
-        historyManager.add(subtask);
-        return subtask;
+        Subtask s = subtasks.get(id);
+        if (s == null) {
+            throw new NotFoundException("Subtask id=" + id + " not found");
+        }
+        historyManager.add(s);
+        return s;
     }
 
     // === ОБНОВЛЕНИЕ ===
@@ -256,7 +268,9 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Subtask> getSubtasksOfEpic(int epicId) {
         Epic epic = epics.get(epicId);
-        if (epic == null) throw new NotFoundException("Epic id=" + epicId + " не найден");
+        if (epic == null) {
+            throw new NotFoundException("Epic id=" + epicId + " не найден");
+        }
         return epic.getSubtaskIds().stream()
                 .map(subtasks::get)
                 .filter(Objects::nonNull)
