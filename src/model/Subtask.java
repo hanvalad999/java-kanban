@@ -3,6 +3,10 @@ package model;
 public class Subtask extends Task {
     private int epicId;
 
+    public Subtask() {
+        super(null, null, 0, Status.NEW);
+    }
+
     public Subtask(String title, String description, int id, Status status, int epicId) {
         super(title, description, id, status);
         this.epicId = epicId;
@@ -14,6 +18,11 @@ public class Subtask extends Task {
 
     public void setEpicId(int epicId) {
         this.epicId = epicId;
+    }
+
+    @Override
+    public TaskType getType() {
+        return TaskType.SUBTASK;
     }
 
     @Override
